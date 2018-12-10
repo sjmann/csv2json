@@ -3,10 +3,17 @@ const csv = require('csvtojson'),
     path = require('path');
 
 // Create the path to csv file, using path to ensure OS agonstic approach
-const csvPath = path.join(__dirname, 'data', 'customer-data.csv');
+const convertCSV = (inputFileName = 'customer-data.csv') => 
+{
+    // Check that the user has specificed a .CSV file
+    if(inputFileName.substring(inputFileName.length - 4) != '.csv') return console.log('Please specify a CSV file ending in .csv');
+    
+    // Generate the output file name by replacing the file extension
+    let outputFileName = inputFileName.replace('.csv', '.json');
 
-// Chained use of csvtojson package as described in the documentation
-csv()
+    // Build the path to the csv file. CSV source data MUST be in the applications data folder
+    let csvPath = path.join(__dirname, 'data', inputFileName);
+    csv()
     .fromFile(csvPath)
     // Subscribe to the error event included in csvtojson. This will catch
     // any errors related to IO operations.
@@ -18,10 +25,16 @@ csv()
         // Using stringify with the tab escape character passed to the space parameter creates a prettified JSON file output
         let fileContent = JSON.stringify(jsonObj, null, '\t');
         try {
-            fs.writeFileSync(path.join(__dirname, 'data', 'customer-data.json'), fileContent, 'utf-8');
+            fs.writeFileSync(path.join(__dirname, 'data', outputFileName), fileContent, 'utf-8');
             console.log('JSON conversion complete!');
         } catch (error) {
             return console.log(error.message);
         }       
     });
+}
+
+// Call the conversion with optional user defined file name
+convertCSV(process.argv[2]);
+
+
     
